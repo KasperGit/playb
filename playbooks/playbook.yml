@@ -1,0 +1,125 @@
+
+#webserver 1 & 2 met hello app
+- name: Webserver 1 specifiek
+  hosts: helloapp
+  become: yes
+  vars:
+   app: hello.py
+  tasks:
+
+   - name: installeer python
+     apt: name=Python update_cache=yes
+
+   - name: flask-restplus installeren
+     pip: name=flask-restplus
+
+   - name: webapp
+     copy: src=templates/apps/{{app}}.j2 dest=/var/app/app.py
+      mode=0644
+
+#webserver 5 met gehele html/php
+- name: HTML-webpagina's met apache2 instellen 
+  hosts: ws5
+  become: yes
+  vars:
+   conf_file: default.conf
+  tasks:
+   - name: install apache
+     apt: name=apache2 update_cache=yes
+
+   - name: install php en mysql pakketten
+     apt: name="{{item}}" update_cache=yes state=latest
+     with_items:
+      - php5
+      - php5-json
+      - php5-cgi
+      - php5-curl
+      - libapache2-mod-php5
+      - php5-mysql
+      - mysql-server 
+      - mysql-client
+
+   - name: copy website configuratiebestanden
+     copy: src=/templates/websites/{{ conf_file }} dest=/etc/apache2/sites-available/{{ conf_file }}
+
+   - name: website configuratie enabelen
+     file: >
+             dest=/etc/apache2/sites-enabled/{{ conf_file }}
+             src=/etc/apache2/sites-available/{{ conf_file }}
+             state=link
+
+   - name: index.html verwijderen
+     file:
+      path: /var/www/html/index.html
+      state: absent
+
+   - name: website paginas maken
+     copy: src=templates/html/ dest=/var/www/html/
+
+   - name: restart apache2
+     service: name=apache2 state=restarted
+
+
+#varnish installeren en configureren
+- name: Varnish instaleren
+  hosts: varnishcache
+  become: yes
+  vars:
+   varnish_conf: varnish
+   vcl: vcl.vcl
+  tasks:
+
+   - name: Installeer Nginx voor SSL offloading
+     apt: name=nginx update-cache=yes
+
+   - name: configuratie Nginx & certificaten kopieren
+     copy: src=templates/nginx dest=/etc/nginx
+
+   - name: installatie varnish voorbereiden
+     apt: name=debian-archive-keyring update-cache=yes
+
+   - name: en curl
+     shell: 'curl -L https://packagecloud.io/varnishcache/varnish41/gpgkey | sudo apt-key add -'
+
+   - name: varnish bestanden ophalen    
+     copy: src=templates/varnish/varnishconfig.list dest=/etc/apt/sources.list.d/varnishcache_varnish41.list
+       
+   - name: Varnish installeren     
+     apt: name=varnish update-cache=yes
+
+   - name: copy varnish backend configuratiebestanden
+     copy: src=templates/varnish/varnish.j2 dest=/etc/default/varnish
+
+   - name: copy varnish vcl bestand vcl01
+     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl01.vcl
+
+   - name: copy varnish vcl bestand vcl02 (om uptime te behouden tijdens vcl-renew)
+     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl
+
+   - name: copy vcl update script
+     copy: src=templates/varnish/vcl_updater dest=/etc/varnish/vcl_update
+     mode: 
+
+   - name: restart varnish
+     service: name=varnish state=restarted
+
+
+
+# Varnish VCL updaten
+- name: Varnish VCL-updaten
+  hosts: varnishcache
+  become: yes
+  tags:
+   - vclupdate
+  vars:
+   vcl: vcl.vcl
+  tasks:
+
+   - name: copy varnish vcl bestand vcl01
+     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl01.vcl
+
+   - name: vcl laten updaten door varnish script
+     script: 
+
+   - name: copy varnish vcl bestand vcl02 (om uptime te behouden tijdens vcl-renew)
+     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl
