@@ -1,5 +1,5 @@
 [webservers]
-ws1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2221
+ws1 ansible_ssh_host= ansible_ssh_port=2221
 ws2 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2222
 ws3 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2223
 ws4 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2224
@@ -10,5 +10,4 @@ ws1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2221
 ws2 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2222
 
 [varnishcache]
-vc1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2211
-
+vc1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2211 
