@@ -1,21 +1,45 @@
 
-#webserver 1 & 2 met hello app
-- name: Webserver 1 specifiek
+#webserver met hello app
+- name: Hello app servers installeren
   hosts: helloapp
   become: yes
   vars:
    app: hello.py
   tasks:
 
-   - name: installeer python
-     apt: name=Python update_cache=yes
+   - name: installeer python pip
+     apt: name=python-pip update_cache=yes
 
    - name: flask-restplus installeren
      pip: name=flask-restplus
 
-   - name: webapp
-     copy: src=templates/apps/{{app}}.j2 dest=/var/app/app.py
-      mode=0644
+   - name: webappmap maken
+     file: path=/var/app state=directory
+     
+   - name: het bestand
+     copy: src=templates/apps/{{app}} dest=/var/app/app.py
+
+#webserver 1 & 2 met hello app
+- name: Postcode app servers installeren
+  hosts: postcodeapp
+  become: yes
+  vars:
+   app: postcode.py
+  tasks:
+
+   - name: installeer python pip
+     apt: name=python-pip update_cache=yes
+     
+   - name: flask-restplus installeren
+     pip: name=flask-restplus
+     
+   - name: webappmap maken
+     file: path=/var/app state=directory
+     
+   - name: het bestand
+     copy: src=templates/apps/{{app}} dest=/var/app/app.py
+
+
 
 #webserver 5 met gehele html/php
 - name: HTML-webpagina's met apache2 instellen 
@@ -40,7 +64,7 @@
       - mysql-client
 
    - name: copy website configuratiebestanden
-     copy: src=/templates/websites/{{ conf_file }} dest=/etc/apache2/sites-available/{{ conf_file }}
+     copy: src=templates/websites/{{ conf_file }} dest=/etc/apache2/sites-available/{{ conf_file }}
 
    - name: website configuratie enabelen
      file: >
@@ -69,11 +93,11 @@
    vcl: vcl.vcl
   tasks:
 
+   - name: configuratie Nginx & certificaten kopieren
+     copy: src=templates/nginx dest=/etc/
+
    - name: Installeer Nginx voor SSL offloading
      apt: name=nginx update-cache=yes
-
-   - name: configuratie Nginx & certificaten kopieren
-     copy: src=templates/nginx dest=/etc/nginx
 
    - name: installatie varnish voorbereiden
      apt: name=debian-archive-keyring update-cache=yes
@@ -90,16 +114,21 @@
    - name: copy varnish backend configuratiebestanden
      copy: src=templates/varnish/varnish.j2 dest=/etc/default/varnish
 
-   - name: copy varnish vcl bestand vcl01
+   - name: copy varnish vcl bestand vcl1
      copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl01.vcl
 
-   - name: copy varnish vcl bestand vcl02 (om uptime te behouden tijdens vcl-renew)
+   - name: copy varnish vcl bestand vcl2 (om uptime te behouden tijdens vcl-renew)
      copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl
 
    - name: copy vcl update script
-     copy: src=templates/varnish/vcl_updater dest=/etc/varnish/vcl_update
-     mode: 
-
+     copy: src=templates/varnish/vcl_updater dest=/etc/varnish/vcl_update mode=0755
+ 
+   - name: check varnish aan
+     service: name=varnish state=started
+     
+   - name: execute vcl_update
+     command: /etc/varnish/vcl_update
+     
    - name: restart varnish
      service: name=varnish state=restarted
 
@@ -115,11 +144,11 @@
    vcl: vcl.vcl
   tasks:
 
-   - name: copy varnish vcl bestand vcl01
+   - name: copy varnish vcl bestand vcl1
      copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl01.vcl
 
-   - name: vcl laten updaten door varnish script
-     script: 
+   - name: execute vcl_update
+     command: /etc/varnish/vcl_update
 
-   - name: copy varnish vcl bestand vcl02 (om uptime te behouden tijdens vcl-renew)
+   - name: copy varnish vcl bestand vcl2 (om uptime te behouden tijdens vcl-renew)
      copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl

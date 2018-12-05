@@ -1,0 +1,11 @@
+#!/bin/bash
+varnishadm vcl.load vcl02.vcl /etc/varnish/vcl02.vcl
+varnishadm vcl.use vcl02.vcl
+varnishadm vcl.discard vcl01.vcl
+varnishadm vcl.load vcl01.vcl /etc/varnish/vcl01.vcl
+varnishadm vcl.use vcl01.vcl
+varnishadm vcl.discard vcl02.vcl
+
+
+exit
+
