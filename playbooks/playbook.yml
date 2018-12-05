@@ -1,5 +1,5 @@
 
-#webserver met hello app
+#webservers met hello app
 - name: Hello app servers installeren
   hosts: helloapp
   become: yes
@@ -17,9 +17,9 @@
      file: path=/var/app state=directory
      
    - name: het bestand
-     copy: src=templates/apps/{{app}} dest=/var/app/app.py
+     copy: src=templates/apps/{{app}} dest=/var/app/app.py mode=0755
 
-#webserver 1 & 2 met hello app
+#webserver met postcode app
 - name: Postcode app servers installeren
   hosts: postcodeapp
   become: yes
@@ -37,7 +37,7 @@
      file: path=/var/app state=directory
      
    - name: het bestand
-     copy: src=templates/apps/{{app}} dest=/var/app/app.py
+     copy: src=templates/apps/{{app}} dest=/var/app/app.py mode=0755
 
 
 
@@ -107,28 +107,38 @@
 
    - name: varnish bestanden ophalen    
      copy: src=templates/varnish/varnishconfig.list dest=/etc/apt/sources.list.d/varnishcache_varnish41.list
-       
+     
    - name: Varnish installeren     
      apt: name=varnish update-cache=yes
-
+     
    - name: copy varnish backend configuratiebestanden
      copy: src=templates/varnish/varnish.j2 dest=/etc/default/varnish
 
    - name: copy varnish vcl bestand vcl1
      copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl01.vcl
-
-   - name: copy varnish vcl bestand vcl2 (om uptime te behouden tijdens vcl-renew)
-     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl
+     notify: 
+      - copy vcl2
+      - vcl update
+      - restart varnish
 
    - name: copy vcl update script
      copy: src=templates/varnish/vcl_updater dest=/etc/varnish/vcl_update mode=0755
- 
+     notify:
+      - vcl update
+      - restart varnish
+     
    - name: check varnish aan
      service: name=varnish state=started
+          
+  handlers:   
+         
+   - name: copy vcl2
+     copy: src=templates/varnish/{{ vcl }} dest=/etc/varnish/vcl02.vcl
      
-   - name: execute vcl_update
+   - name: vcl update
      command: /etc/varnish/vcl_update
-     
+     ignore_errors: yes
+   
    - name: restart varnish
      service: name=varnish state=restarted
 

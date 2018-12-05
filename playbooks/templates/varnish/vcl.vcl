@@ -10,12 +10,14 @@ import directors;
 acl whitelist1 {
 	"172.16.1.39";
 	"192.168.10.1";
+	"192.168.0.193";
 	"localhost";
 	"127.0.0.1";
 }
 #postcode whitelist
 acl whitelist2 {
 	"172.16.1.40";
+	"192.168.0.198";
 	"localhost";
 	"127.0.0.1";
 }
@@ -63,8 +65,8 @@ sub vcl_init {
 
 	    # saintmode clusteren voor fallback
 	    new fb = directors.fallback() ;
-	    fb.add_backend(ws3) ;	
-	
+	    fb.add_backend(rrd.backend()) ;
+	    fb.add_backend(ws3) ;
 }
 
 #Filters op aanvragen
@@ -90,12 +92,12 @@ sub vcl_recv
 	#SalesL groep
 	if ((req.http.group=="SalesL") && (client.ip ~ whitelist1)) {
 		
-		if (req.url ~ "^/salesl?"){
+		if (req.url ~ "^/salesl.php?"){
 			set req.backend_hint =ws4;
 	                return (hash);
 		}
 		# Index.php
-		if (req.url ~ "^/index.php"){
+		if (req.url ~ "^/index.php?"){
 			set req.backend_hint =ws4;
 	                return (hash);
 		}
@@ -115,10 +117,11 @@ sub vcl_recv
 
 	#SalesZ groep
 	if (req.http.group=="SalesZ") {
-		if ((req.url ~ "^/SalesZ") && (client.ip ~ whitelist2)){
-			set req.backend_hint =ws2;
+		if ((req.url ~ "^/salesz.php") && (client.ip ~ whitelist2)){
+			set req.backend_hint =ws4;
 		}
 		if (req.url ~ "^/index.php"){
+			set req.backend_hint =ws4;                        
 			return (hash) ;
 		}
 	        #hallo python

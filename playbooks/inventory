@@ -11,6 +11,7 @@ ws2
 ws3
 
 [postcodeapp]
+ws4
 
 [varnishcache]
 vc1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2211 

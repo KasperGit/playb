@@ -1,11 +1,12 @@
-port = '5001'
+#!/usr/bin/env  python2
+
 from flask import Flask, request
 from flask_restplus import Api, Resource, fields
 app = Flask(__name__)
 api = Api(app, version='0.0.0.0.1', title='Varnish postcode test API', description='Test API voor Varnish by Kasper van Dijk')
 postcode = {}
 
-@api.route('/pc')
+@api.route('/postcode')
 class adressen(Resource):
     def get(self, postcode_id):
         return {postcode_id: postcode[postcode_id]}
