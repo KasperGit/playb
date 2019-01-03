@@ -149,7 +149,7 @@ sub vcl_recv
 		}
 
 	        #hallo python
-	        if (req.url ~ "^/hello" || req.url ~ "^/sleep"){
+	        if (req.url ~ "^/hello" || req.url ~ "^/postcode"){
 	                set req.backend_hint = ws1;
 	                return (hash);
 		}
