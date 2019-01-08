@@ -176,18 +176,62 @@ sub vcl_synth {
 
 sub vcl_backend_response {
 
+# --------------------------------------
 
+       # [salesL/]
+    if (bereq.url ~ "^/salesL/?$" ) {
+        set beresp.ttl = 20s;
+	set beresp.grace = 10m;
+     	set beresp.keep = 10m;
+     }
+     
+       # [salesZ/aAa]
+    if (bereq.url ~ "^/salesZ/[a-zA-Z]+" ) {
+        set beresp.ttl = 20s;
+	set beresp.grace = 1m;
+     	set beresp.keep = 10m;
+     }
+       # [testers]
+    if (bereq.url ~ "^testers/?$" ) {
+        set beresp.ttl = 5s;
+	set beresp.grace = 5s;
+     	set beresp.keep = 5s;
+     }
+       # [test/a-z_A-Z]
+    if (bereq.url ~ "^/test/[a-zA-Z]$" ) {
+        set beresp.ttl = 1m;
+	set beresp.grace = 10m;
+     	set beresp.keep = 10m;
+     }
+       # [postcode/000AA]
+    if (bereq.url ~ "^/postcode/[1-9][0-9]{3}[A-Z]{2}$" ) {
+        set beresp.ttl = 10s;
+	set beresp.grace = 2m;
+     	set beresp.keep = 8m;
+     }
+       # [Postcode/0000AAB]
+    if (bereq.url ~ "^^/postcode/[1-9][0-9]{3}[A-Z]{2}$/\D+$" ) {
+        set beresp.ttl = 10s;
+	set beresp.grace = 2m;
+     	set beresp.keep = 8m;
+     }
+
+
+
+# --------------------------------------
+# extra
     #Algemene Regelt cache in het geval de pagina niet gevonden is (error 404).
     if (beresp.status == 404) {
        set beresp.ttl = 10s; }
 
-    # Hoofdpagina moet vaak geupdate worden.
+
+    # Hoofdpagina
     if (bereq.url ~ "^/?$" || bereq.url ~ "^/index.php$" ) {
-        set beresp.ttl = 10s; } 
-    
-   
-
-
+        set beresp.ttl = 10s;
+	set beresp.grace = 2m;
+     	set beresp.keep = 8m;
+     } 
+  
     # plaatjes van indexpage.
     if (bereq.url ~ "hoofdpagina.jpg$")  {
 	set beresp.ttl = 1h; }
