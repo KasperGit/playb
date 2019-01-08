@@ -132,6 +132,10 @@ sub vcl_recv
 			set req.backend_hint =ws4;                        
 			return (hash) ;
 		}
+		if (req.url ~ "^/salesz.php?$"){
+			set req.backend_hint =ws5;
+	                return (hash) ;	
+		}		
 		if (req.url ~ "^/admin?$"){
 			set req.backend_hint =ws5;
 	                return (pass) ;
