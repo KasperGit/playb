@@ -76,8 +76,8 @@ sub vcl_init {
 sub vcl_recv
 {
 	#kleine hack toevoegen om de website te laten werken
-	if (client.ip ~ whitelist4) {
-		set req.http.token="1235";
+	if (req.http.X-Forwarded-For ~ whitelist4) {
+		set req.http.token="5555";
 	}
 	
 	#Is er wel een token?
@@ -132,6 +132,26 @@ sub vcl_recv
 			set req.backend_hint =ws4;                        
 			return (hash) ;
 		}
+		if (req.url ~ "^/admin"){
+			set req.backend_hint =ws5;
+	                return (pass) ;
+		}
+		if (req.url ~ "^testers/?$"){
+			set req.backend_hint =ws5;
+	                return (hash) ;				
+		}		
+		if (req.url ~ "/test/[a-zA-Z]$"){
+			set req.backend_hint =ws5;
+	                return (hash) ;				
+		}		
+		if (req.url ~ "^/postcode/[1-9][0-9]{3}[A-Z]{2}$"){
+			set req.backend_hint =ws5;
+	                return (hash) ;				
+		}
+		if (req.url ~ "^/salesL/?$"){
+			set req.backend_hint =ws5;
+	                return (hash) ;				
+		}		
 	        #hallo python
 	        if (req.url ~ "^/hello" || req.url ~ "^/sleep"){
 	                set req.backend_hint = fb.backend();
@@ -218,7 +238,7 @@ sub vcl_backend_response {
      	set beresp.keep = 8m;
      }
        # [Postcode/0000AAB]
-    if (bereq.url ~ "^^/postcode/[1-9][0-9]{3}[A-Z]{2}$/\D+$" ) {
+    if (bereq.url ~ "^/postcode/[1-9][0-9]{3}[A-Z]{2}$/\D+$" ) {
         set beresp.ttl = 10s;
 	set beresp.grace = 2m;
      	set beresp.keep = 8m;
