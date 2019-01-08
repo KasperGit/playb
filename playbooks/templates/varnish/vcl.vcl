@@ -27,7 +27,10 @@ acl whitelist3 {
 	"localhost";
 	"127.0.0.1";
 }
-
+#Hack whitelist
+acl whitelist4 {
+	"192.168.0.198";
+}
 #De backend servers
 
 #helloapp
@@ -72,6 +75,11 @@ sub vcl_init {
 #Filters op aanvragen
 sub vcl_recv
 {
+	#kleine hack toevoegen om de website te laten werken
+	if (client.ip ~ whitelist1) {
+		set req.http.token="1235
+	}
+	
 	#Is er wel een token?
 	if (!req.http.token){
 		return (synth (403, "Onbevoegd zonder token"));
@@ -86,7 +94,7 @@ sub vcl_recv
 	} 
 
 	if (req.http.token == "9999"){
-		set req.http.group="Admin";
+		set req.http.group="Admin";	
 	}
 
 	#SalesL groep
