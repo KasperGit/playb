@@ -76,7 +76,7 @@ sub vcl_init {
 sub vcl_recv
 {
 	#kleine hack toevoegen om de website te laten werken
-	if (client.ip ~ whitelist1) {
+	if (client.ip ~ whitelist4) {
 		set req.http.token="1235";
 	}
 	
