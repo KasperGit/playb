@@ -7,7 +7,6 @@
 </p>
 
 <?php  
-$
 print (" 
 <h1>welkom </h1>
 <h2>Sales L </h2>
