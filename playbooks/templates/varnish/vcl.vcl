@@ -125,18 +125,18 @@ sub vcl_recv
 
 	#SalesZ groep
 	if (req.http.group=="SalesZ") {
-		if ((req.url ~ "^/salesz.php") && (client.ip ~ whitelist2)){
+		if ((req.url ~ "^/salesz.php?$") && (client.ip ~ whitelist2)){
 			set req.backend_hint =ws4;
 		}
-		if (req.url ~ "^/index.php"){
+		if (req.url ~ "^/index.php?$"){
 			set req.backend_hint =ws4;                        
 			return (hash) ;
 		}
-		if (req.url ~ "^/admin"){
+		if (req.url ~ "^/admin?$"){
 			set req.backend_hint =ws5;
 	                return (pass) ;
 		}
-		if (req.url ~ "^testers/?$"){
+		if (req.url ~ "^/testers/?$"){
 			set req.backend_hint =ws5;
 	                return (hash) ;				
 		}		
