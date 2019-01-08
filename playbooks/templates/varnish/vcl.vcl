@@ -77,7 +77,7 @@ sub vcl_recv
 {
 	#kleine hack toevoegen om de website te laten werken
 	if (client.ip ~ whitelist1) {
-		set req.http.token="1235
+		set req.http.token="1235";
 	}
 	
 	#Is er wel een token?
