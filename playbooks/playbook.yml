@@ -93,14 +93,23 @@
    vcl: vcl.vcl
   tasks:
 
-   - name: configuratie Nginx & certificaten kopieren
-     copy: src=templates/nginx dest=/etc/
+#   - name: configuratie Nginx & certificaten kopieren
+#     copy: src=templates/nginx dest=/etc/
 
-   - name: Installeer Nginx voor SSL offloading
-     apt: name=nginx update-cache=yes
+#   - name: Installeer Nginx voor SSL offloading
+#     apt: name=nginx update-cache=yes
 
+   - name: configuratie Hitch & certificaten kopieren
+     copy: src=templates/hitch dest=/etc/
+      - starthitch
+      
+   - name: Installeer Hitch voor SSL offloading
+     apt: name=hitch update-cache=yes
+     notify:
+      - starthitch
+      
    - name: installatie varnish voorbereiden
-     apt: name=debian-archive-keyring update-cache=yes
+    apt: name=debian-archive-keyring update-cache=yes
 
    - name: en curl
      shell: 'curl -L https://packagecloud.io/varnishcache/varnish41/gpgkey | sudo apt-key add -'
@@ -142,7 +151,8 @@
    - name: restart varnish
      service: name=varnish state=restarted
 
-
+   - name: starthitch
+     shell: 'hitch --backend=[127.0.0.1]:80 example.pem'
 
 # Varnish VCL updaten
 - name: Varnish VCL-updaten
